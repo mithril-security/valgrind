@@ -21779,6 +21779,17 @@ Long dis_ESC_0F (
          stmt( IRStmt_Put( OFFB_CC_NDEP, mkU64(0) ));
          return delta;
       }
+      /* 0F 01 D7 = ENCLU  */
+      if (modrm == 0xD7) {
+         // ENCLU is implemented like a Undefined Instruction
+         // This enables the simulator signal handler to 
+         // handle it like it would do outside Valgrind
+         stmt( IRStmt_Put( OFFB_RIP, mkU64(guest_RIP_curr_instr) ) );
+         jmp_lit(dres, Ijk_NoDecode, guest_RIP_curr_instr);
+         vassert(dres->whatNext == Dis_StopHere);
+         DIP("enclu\n");
+         return delta;
+      }
       /* END HACKY SUPPORT FOR xtest */
       /* 0F 01 F9 = RDTSCP */
       if (modrm == 0xF9 && (archinfo->hwcaps & VEX_HWCAPS_AMD64_RDTSCP)) {
