@@ -21702,6 +21702,34 @@ Long dis_ESC_0F (
    delta++;
    switch (opc) { /* first switch */
 
+   // 0F 00 /4	-- VERR
+   // 0F 00 /5	-- VERW r/m16
+   case 0x00: {
+      // warning: this is not a proper implementation of the opcode
+      // this implementation ignore the opcode whereas
+      // a real CPU would Verify a Segment for Reading or Writing (see Intel documentation [1])
+      // 
+      // We ignore this opcode because Fortanix SDK enclave only uses the opcode as part of a mitigation strategy
+      // of the SGX ÆPIC vulnerability. 
+      // See <https://github.com/rust-lang/rust/blob/6580010551063718462f9dfe41c9490d92994d0e/library/std/src/sys/sgx/abi/usercalls/alloc.rs>
+      // 
+      // From Intel documentation [2] :
+      // > The VERW instruction is already defined to return whether a segment is writable 
+      // > from the current privilege level. MD_CLEAR and FB_CLEAR enumerate that the memory-operand 
+      // > variant of VERW (for example, VERW m16) has been extended to also overwrite buffers affected 
+      // > by MMIO Stale Data vulnerabilities.
+      // 
+      // The Fortanix code only uses the buffer overwritting feature of VERW and does not care
+      // about the actual VERW permission check (which is indicated by setting the ZF flag)
+      // Therefore if we ignore the opcode in Valgrind it just works
+      // 
+      // Reference
+      // [1] https://www.felixcloutier.com/x86/verr:verw
+      // [2] https://www.intel.com/content/www/us/en/developer/articles/technical/software-security-guidance/technical-documentation/processor-mmio-stale-data-vulnerabilities.html#inpage-nav-3-2-2
+      
+      DIP("verr:verw\n");
+      return delta;
+   }
    case 0x01:
    {
       modrm = getUChar(delta);
