@@ -521,7 +521,11 @@ Bool restore_vg_sigframe ( ThreadState *tst,
    tst->arch.vex_shadow1 = frame->vex_shadow1;
    tst->arch.vex_shadow2 = frame->vex_shadow2;
    /* HACK ALERT */
+   // clauverjat: do not override guest GS CONST with old frame to keep current GSBASE
+   // needed because simulation mode of Fortanix set GSBASE in the signal handler to emulate EENTRY/EEXIT
+   ULong tmp = tst->arch.vex.guest_GS_CONST;
    tst->arch.vex         = frame->vex;
+   tst->arch.vex.guest_GS_CONST = tmp;
    /* end HACK ALERT */
    *sigNo                = frame->sigNo_private;
    return True;
