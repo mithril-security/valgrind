@@ -21727,8 +21727,20 @@ Long dis_ESC_0F (
       // [1] https://www.felixcloutier.com/x86/verr:verw
       // [2] https://www.intel.com/content/www/us/en/developer/articles/technical/software-security-guidance/technical-documentation/processor-mmio-stale-data-vulnerabilities.html#inpage-nav-3-2-2
       
+      Int   len;
+      UChar rm;
+      rm = getUChar(delta);
+
+      /* make sure this instruction is correct */
+      if (epartIsReg(rm) || !(gregLO3ofRM(rm) == 4 || gregLO3ofRM(rm) == 5))
+         goto decode_failure;
+
+      addr = disAMode ( &len, vbi, pfx, delta, dis_buf, 0 );
       DIP("verr:verw\n");
+
+      delta += len;
       return delta;
+
    }
    case 0x01:
    {
